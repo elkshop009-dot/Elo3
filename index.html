@@ -2,38 +2,176 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Elo | Premium</title>
     <style>
         :root {
             --primary: #ff4b6b;
             --gradient: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
-            --bg: #121212;
+            --bg: #0f0f0f;
             --online: #4cd137;
+            --card-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
-        * { box-sizing: border-box; font-family: -apple-system, system-ui, sans-serif; margin: 0; padding: 0; }
-        body { background: var(--bg); display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-        .app-shell { width: 100%; max-width: 400px; height: 200vh; background: white; position: relative; display: flex; flex-direction: column; }
-        @media (min-width: 500px) { .app-shell { height: 90vh; border-radius: 30px; border: 8px solid #222; } }
-        .header { padding: 20px; font-size: 24px; font-weight: bold; color: var(--primary); border-bottom: 1px solid #eee; }
-        .view { flex: 1; display: none; flex-direction: column; overflow: hidden; }
+
+        /* Essential Reset */
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            background: var(--bg); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            height: 100dvh; 
+            overflow: hidden; 
+        }
+
+        /* The App Shell - Fixed height for mobile */
+        .app-shell { 
+            width: 100%; 
+            max-width: 430px; 
+            height: 100%; 
+            background: #fff; 
+            position: relative; 
+            display: flex; 
+            flex-direction: column; 
+            box-shadow: 0 0 40px rgba(0,0,0,0.5);
+        }
+
+        @media (min-width: 500px) { 
+            .app-shell { height: 92vh; border-radius: 40px; border: 12px solid #222; } 
+        }
+
+        /* Header UI */
+        .header { 
+            padding: 20px 25px 10px; 
+            font-size: 28px; 
+            font-weight: 800; 
+            color: var(--primary); 
+            letter-spacing: -1px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Dynamic Views */
+        .view { flex: 1; display: none; flex-direction: column; overflow: hidden; animation: fadeIn 0.3s ease; }
         .view.active { display: flex; }
-        .stack { flex: 1; position: relative; margin: 15px; background: #f0f0f0; border-radius: 20px; }
-        .card { position: absolute; width: 100%; height: 100%; border-radius: 20px; overflow: hidden; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: transform 0.4s ease; }
-        .card img { width: 100%; height: 100%; object-fit: cover; }
-        .card-info { position: absolute; bottom: 0; width: 100%; padding: 40px 15px 15px; background: linear-gradient(transparent, rgba(0,0,0,0.9)); color: white; }
-        .inbox-item { display: flex; align-items: center; padding: 15px; gap: 12px; border-bottom: 1px solid #f9f9f9; cursor: pointer; }
-        .avatar { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; }
-        #chat-log { flex: 1; padding: 15px; overflow-y: auto; background: #f9f9f9; display: flex; flex-direction: column; gap: 10px; }
-        .bubble { padding: 10px 15px; border-radius: 18px; font-size: 14px; max-width: 75%; line-height: 1.4; }
-        .user { align-self: flex-end; background: var(--gradient); color: white; border-bottom-right-radius: 2px; }
-        .ai { align-self: flex-start; background: white; border: 1px solid #eee; border-bottom-left-radius: 2px; }
-        .nav { height: 70px; border-top: 1px solid #eee; display: flex; justify-content: space-around; align-items: center; }
-        .nav-item { font-size: 26px; cursor: pointer; color: #ccc; transition: 0.2s; }
-        .nav-item.active { color: var(--primary); }
-        .online-dot { width: 10px; height: 10px; background: var(--online); border-radius: 50%; display: inline-block; border: 2px solid white; }
-        #match-popup { position: absolute; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; display: none; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; padding: 20px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Card Stack Refinement */
+        .stack { flex: 1; position: relative; margin: 10px 15px; perspective: 1000px; }
+        .card { 
+            position: absolute; width: 100%; height: 100%; 
+            border-radius: 28px; overflow: hidden; background: #f3f3f3; 
+            box-shadow: var(--card-shadow); 
+            transition: transform 0.45s cubic-bezier(0.23, 1, 0.32, 1);
+            will-change: transform;
+        }
+        .card img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+        .card-info { 
+            position: absolute; bottom: 0; width: 100%; 
+            padding: 80px 20px 25px; 
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, transparent 100%); 
+            color: white; 
+        }
+        .card-info h2 { font-size: 24px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+
+        /* Buttons & Interaction */
+        .action-btns { padding: 20px; display: flex; justify-content: center; gap: 20px; background: white; }
+        .btn-circle {
+            width: 65px; height: 65px; border-radius: 50%; border: none; 
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: transform 0.1s; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .btn-circle:active { transform: scale(0.9); }
+        .btn-dislike { background: #fff; color: #ff4444; font-size: 28px; border: 1px solid #eee; }
+        .btn-like { background: var(--gradient); color: white; font-size: 28px; }
+
+        /* Inbox List */
+        .inbox-item { display: flex; align-items: center; padding: 16px 20px; gap: 15px; border-bottom: 1px solid #f8f8f8; cursor: pointer; transition: background 0.2s; }
+        .inbox-item:active { background: #f5f5f5; }
+        .avatar { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; background: #eee; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+        /* Modern Chat */
+        #chat-log { flex: 1; padding: 20px; overflow-y: auto; background: #fafafa; display: flex; flex-direction: column; gap: 12px; }
+        .bubble { padding: 12px 18px; border-radius: 22px; font-size: 15px; max-width: 80%; line-height: 1.5; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .user { align-self: flex-end; background: var(--gradient); color: white; border-bottom-right-radius: 4px; }
+        .ai { align-self: flex-start; background: white; color: #1a1a1a; border-bottom-left-radius: 4px; border: 1px solid #efefef; }
+
+        /* Footer Nav (Safe Area for modern phones) */
+        .nav { 
+            height: 80px; border-top: 1px solid #eee; 
+            display: flex; justify-content: space-around; 
+            align-items: center; background: white;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .nav-item { font-size: 28px; cursor: pointer; color: #d0d0d0; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .nav-item.active { color: var(--primary); transform: translateY(-3px) scale(1.1); }
+
+        /* Status & Popups */
+        .online-dot { width: 12px; height: 12px; background: var(--online); border-radius: 50%; display: inline-block; border: 2px solid white; }
+        .pulse { animation: pulse-anim 2s infinite; }
+        @keyframes pulse-anim { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.1); } 100% { opacity: 1; transform: scale(1); } }
+
+        #match-popup { 
+            position: absolute; inset: 0; background: rgba(0,0,0,0.97); 
+            z-index: 2000; display: none; flex-direction: column; 
+            justify-content: center; align-items: center; color: white; text-align: center; padding: 40px;
+            backdrop-filter: blur(10px);
+        }
     </style>
+</head>
+<body>
+
+<div class="app-shell">
+    <div id="match-popup">
+        <div style="font-size: 80px; margin-bottom: 10px;">🔥</div>
+        <h1 style="color:var(--primary); font-size: 42px; font-weight: 900; letter-spacing: -2px;">DEU MATCH!</h1>
+        <p style="margin: 15px 0; font-size: 18px; opacity: 0.9;">Você e <span id="match-name-label" style="font-weight: 800;"></span> se curtiram mutuamente.</p>
+        <button onclick="handleAdClick(); openChatFromMatch();" style="margin-top:30px; width: 100%; padding:18px; border-radius:35px; border:none; background:var(--gradient); color:white; font-weight:800; cursor:pointer; font-size: 18px; box-shadow: 0 10px 20px rgba(255, 75, 107, 0.3);">Mandar Mensagem</button>
+        <p onclick="closeMatch()" style="margin-top:25px; font-size:15px; opacity:0.5; cursor:pointer; font-weight: 600;">Continuar explorando</p>
+    </div>
+
+    <div id="view-discover" class="view active">
+        <div class="header">Elo <span style="font-size: 20px; opacity: 0.3;">Premium</span></div>
+        <div class="stack" id="card-stack"></div>
+        <div class="action-btns">
+            <button onclick="handleAdClick(); swipe(false)" class="btn-circle btn-dislike">✕</button>
+            <button onclick="handleAdClick(); swipe(true)" class="btn-circle btn-like">❤</button>
+        </div>
+    </div>
+
+    <div id="view-inbox" class="view">
+        <div class="header" style="color:#000">Mensagens</div>
+        <div id="inbox-list" style="overflow-y: auto;"></div>
+    </div>
+
+    <div id="view-chat" class="view">
+        <div style="padding:15px 20px; border-bottom: 1px solid #f0f0f0; display:flex; align-items:center; gap:12px; background: white;">
+            <button onclick="showView('inbox')" style="border:none; background:none; font-size:32px; cursor:pointer; color:#ccc;">‹</button>
+            <div style="position:relative">
+                <img id="chat-img" class="avatar" style="width:42px; height:42px;">
+                <div class="online-dot pulse" style="position:absolute; bottom:0; right:0; border-width: 1.5px;"></div>
+            </div>
+            <b id="chat-name-header" style="font-size: 18px;"></b>
+        </div>
+        <div id="chat-log"></div>
+        <div style="padding:15px 20px; display:flex; gap:12px; border-top:1px solid #eee; background: white; padding-bottom: calc(15px + env(safe-area-inset-bottom));">
+            <input type="text" id="chat-input" style="flex:1; padding:14px 20px; border-radius:30px; border:1px solid #eee; outline:none; background:#f5f5f5; font-size: 16px;" placeholder="Diga algo...">
+            <button id="send-btn" style="background:var(--primary); color:white; border:none; width: 48px; height: 48px; border-radius:50%; cursor:pointer; font-weight:bold; font-size: 20px; display: flex; align-items: center; justify-content: center;">➔</button>
+        </div>
+    </div>
+
+    <div class="nav">
+        <div class="nav-item active" onclick="handleAdClick(); showView('discover', this)">&#128149;</div>
+        <div class="nav-item" onclick="handleAdClick(); showView('inbox', this)">💬</div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
 </head>
 <body>
 
