@@ -8,142 +8,72 @@
         :root {
             --primary: #ff4b6b;
             --gradient: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
-            --bg-desktop: #1a1a1a; /* Dark background for desktop */
+            --bg-body: #121212; /* Dark background for desktop */
             --bg-app: #ffffff;
-            --online: #4cd137;
         }
 
-        /* Essential Reset */
-        * { 
-            box-sizing: border-box; 
-            margin: 0; 
-            padding: 0; 
-            font-family: -apple-system, system-ui, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
+        /* Prevent the "Zoom" issue and leaking text */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
         
-        /* Desktop Background */
-        body {
-            background-color: var(--bg-desktop);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100dvh;
+        body { 
+            background-color: var(--bg-body); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100dvh; 
             width: 100vw;
-            overflow: hidden;
+            overflow: hidden; 
         }
 
-        /* THE MAGIC: Mobile on mobile, Floating Frame on Desktop */
+        /* THE FIX: This shell forces a phone shape on desktop, but fills 100% on phones */
         .app-shell { 
             width: 100%; 
+            max-width: 450px; /* Limits width on desktop */
             height: 100dvh; 
             background: var(--bg-app); 
             display: flex; 
             flex-direction: column;
             position: relative;
-            transition: all 0.3s ease;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
         }
 
-        /* Desktop specific styles */
+        /* Desktop View Refinement */
         @media (min-width: 500px) {
             .app-shell {
-                width: 400px; /* Fixed width for desktop */
-                height: 85vh; /* Don't touch the edges on desktop */
+                height: 90vh;
                 border-radius: 30px;
-                border: 8px solid #222; /* Looks like a phone frame */
-                overflow: hidden;
+                border: 8px solid #333;
             }
         }
 
-        /* Content Areas */
+        /* Header Fix */
         .header { 
             padding: 15px 20px; 
             font-size: 24px; 
-            font-weight: 800; 
+            font-weight: bold; 
             color: var(--primary); 
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid #eee;
             background: #fff;
-            flex-shrink: 0;
             padding-top: calc(10px + env(safe-area-inset-top));
         }
 
-        .view { flex: 1; display: none; flex-direction: column; overflow: hidden; position: relative; }
+        .view { flex: 1; display: none; flex-direction: column; overflow: hidden; }
         .view.active { display: flex; }
 
-        /* Card container */
-        .stack-container {
-            flex: 1;
-            position: relative;
-            margin: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
+        /* Card Layout Fix */
+        .stack-area { flex: 1; position: relative; margin: 10px; }
         #card-stack { width: 100%; height: 100%; position: relative; }
-        
-        .card { 
-            position: absolute; inset: 0; border-radius: 20px; 
-            overflow: hidden; background: #eee; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-        .card img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
-        
-        .card-info { 
-            position: absolute; bottom: 0; width: 100%; 
-            padding: 60px 15px 15px; 
-            background: linear-gradient(transparent, rgba(0,0,0,0.85)); 
-            color: white; 
-        }
+        .card { position: absolute; inset: 0; border-radius: 20px; overflow: hidden; background: #eee; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: transform 0.4s ease; }
+        .card img { width: 100%; height: 100%; object-fit: cover; }
+        .card-info { position: absolute; bottom: 0; width: 100%; padding: 40px 15px 15px; background: linear-gradient(transparent, rgba(0,0,0,0.9)); color: white; }
 
-        /* Actions */
-        .controls {
-            padding: 15px;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            background: #fff;
-            flex-shrink: 0;
-        }
-
-        .btn {
-            width: 60px; height: 60px; border-radius: 50%; border: none;
-            font-size: 24px; cursor: pointer; display: flex;
-            align-items: center; justify-content: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            transition: transform 0.1s;
-        }
-        .btn:active { transform: scale(0.9); }
-
-        /* Footer Nav */
-        .nav { 
-            height: 70px; 
-            border-top: 1px solid #eee; 
-            display: flex; 
-            justify-content: space-around; 
-            align-items: center;
-            background: #fff;
-            padding-bottom: env(safe-area-inset-bottom);
-            flex-shrink: 0;
-        }
-        
-        .nav-item { font-size: 28px; cursor: pointer; color: #d0d0d0; }
+        /* Navigation Fix */
+        .nav { height: 70px; border-top: 1px solid #eee; display: flex; justify-content: space-around; align-items: center; background: #fff; padding-bottom: env(safe-area-inset-bottom); }
+        .nav-item { font-size: 28px; cursor: pointer; color: #ddd; }
         .nav-item.active { color: var(--primary); }
 
-        /* Popups & Chat */
-        #match-popup { 
-            position: absolute; inset: 0; background: rgba(0,0,0,0.95); 
-            z-index: 9999; display: none; flex-direction: column; 
-            justify-content: center; align-items: center; color: white; text-align: center;
-            padding: 20px; border-radius: inherit;
-        }
-
-        #inbox-list { overflow-y: auto; flex: 1; }
-        #chat-log { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background: #fdfdfd; }
-        .bubble { padding: 10px 15px; border-radius: 18px; font-size: 15px; max-width: 80%; }
-        .user { align-self: flex-end; background: var(--gradient); color: white; }
-        .ai { align-self: flex-start; background: #eee; color: #000; }
+        /* Popup Fix */
+        #match-popup { position: absolute; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; display: none; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; border-radius: inherit; }
     </style>
 </head>
 <body>
@@ -152,36 +82,36 @@
     <div id="match-popup">
         <h1 style="color:var(--primary); font-size: 32px;">DEU MATCH!</h1>
         <p>Você e <span id="match-name-label" style="font-weight:bold;"></span> se curtiram.</p>
-        <button onclick="handleAdClick(); openChatFromMatch();" style="width:100%; padding:18px; border-radius:35px; border:none; background:var(--gradient); color:white; font-weight:bold; margin-top:20px; cursor:pointer;">Mandar Mensagem</button>
-        <p onclick="closeMatch()" style="margin-top:20px; opacity:0.5; cursor:pointer;">Voltar</p>
+        <button onclick="handleAdClick(); openChatFromMatch();" style="width:80%; padding:15px; border-radius:30px; border:none; background:var(--gradient); color:white; font-weight:bold; margin-top:20px; cursor:pointer;">Mandar Mensagem</button>
+        <p onclick="closeMatch()" style="margin-top:20px; opacity:0.6; cursor:pointer;">Voltar</p>
     </div>
 
     <div id="view-discover" class="view active">
         <div class="header">Elo &#128293;</div>
-        <div class="stack-container">
+        <div class="stack-area">
             <div id="card-stack"></div>
         </div>
-        <div class="controls">
-            <button onclick="handleAdClick(); swipe(false)" class="btn" style="background:#fff; color:red; border:1px solid #eee;">✕</button>
-            <button onclick="handleAdClick(); swipe(true)" class="btn" style="background:var(--gradient); color:#fff;">❤</button>
+        <div style="padding:15px; display:flex; justify-content:center; gap:20px;">
+            <button onclick="handleAdClick(); swipe(false)" style="width:60px; height:60px; border-radius:50%; border:1px solid #eee; background:#fff; color:red; font-size:24px; cursor:pointer;">✕</button>
+            <button onclick="handleAdClick(); swipe(true)" style="width:60px; height:60px; border-radius:50%; border:none; background:var(--gradient); color:#fff; font-size:24px; cursor:pointer;">❤</button>
         </div>
     </div>
 
     <div id="view-inbox" class="view">
         <div class="header" style="color:#000">Mensagens</div>
-        <div id="inbox-list"></div>
+        <div id="inbox-list" style="overflow-y:auto; flex:1;"></div>
     </div>
 
     <div id="view-chat" class="view">
-        <div style="padding:10px; border-bottom:1px solid #eee; display:flex; align-items:center; gap:10px; flex-shrink:0;">
-            <button onclick="showView('inbox')" style="border:none; background:none; font-size:28px; color:#888; cursor:pointer;">‹</button>
+        <div style="padding:10px; border-bottom:1px solid #eee; display:flex; align-items:center; gap:10px;">
+            <button onclick="showView('inbox')" style="border:none; background:none; font-size:28px; cursor:pointer;">‹</button>
             <img id="chat-img" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
             <b id="chat-name-header"></b>
         </div>
-        <div id="chat-log"></div>
-        <div style="padding:10px; display:flex; gap:10px; border-top: 1px solid #eee; flex-shrink:0;">
-            <input type="text" id="chat-input" style="flex:1; padding:12px; border-radius:20px; border:1px solid #eee; outline:none;" placeholder="Oi...">
-            <button id="send-btn" style="background:var(--primary); color:white; border:none; width: 45px; height: 45px; border-radius:50%; cursor:pointer;">➔</button>
+        <div id="chat-log" style="flex:1; padding:15px; overflow-y:auto; background:#f9f9f9; display:flex; flex-direction:column; gap:10px;"></div>
+        <div style="padding:10px; display:flex; gap:10px; border-top:1px solid #eee; padding-bottom: calc(10px + env(safe-area-inset-bottom));">
+            <input type="text" id="chat-input" style="flex:1; padding:12px; border-radius:20px; border:1px solid #eee; outline:none;" placeholder="Digite aqui...">
+            <button id="send-btn" style="background:var(--primary); color:white; border:none; width:45px; height:45px; border-radius:50%; cursor:pointer;">➔</button>
         </div>
     </div>
 
@@ -194,90 +124,7 @@
 <script src="script.js"></script>
 </body>
 </html>
-            width: 100%; 
-            max-width: 450px; /* Limits width on big phones/tablets */
-            height: 100dvh; /* Dynamic height that adjusts for browser bars */
-            background: var(--bg-app); 
-            display: flex; 
-            flex-direction: column;
-            position: relative;
-            padding-top: env(safe-area-inset-top); /* Avoids the Notch/Camera */
-            padding-bottom: env(safe-area-inset-bottom); /* Avoids the Home bar */
-        }
-
-        /* Header: Scaled for mobile */
-        .header { 
-            padding: 12px 20px; 
-            font-size: clamp(20px, 5vw, 26px); /* Fluid typography */
-            font-weight: 800; 
-            color: var(--primary); 
-            border-bottom: 1px solid #f0f0f0;
-            background: #fff;
-            flex-shrink: 0;
-        }
-
-        .view { 
-            flex: 1; 
-            display: none; 
-            flex-direction: column; 
-            overflow: hidden; 
-            position: relative;
-        }
-        .view.active { display: flex; }
-
-        /* Card Area: Uses flex to fill remaining space without overflowing */
-        .stack-container {
-            flex: 1;
-            position: relative;
-            margin: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        #card-stack {
-            width: 100%;
-            height: 100%;
-            position: relative;
-        }
-        
-        .card { 
-            position: absolute; 
-            inset: 0; /* Fills the container exactly */
-            border-radius: 18px; 
-            overflow: hidden; 
-            background: #eee; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        .card img { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover; 
-            pointer-events: none; 
-        }
-        
-        .card-info { 
-            position: absolute; 
-            bottom: 0; 
-            width: 100%; 
-            padding: 50px 15px 15px; 
-            background: linear-gradient(transparent, rgba(0,0,0,0.85)); 
-            color: white; 
-        }
-
-        /* Buttons: Scaled for thumb reach */
-        .controls {
-            padding: 15px 0;
-            display: flex;
-            justify-content: center;
-            gap: clamp(15px, 6vw, 30px);
-            background: #fff;
-            flex-shrink: 0;
-        }
-
-        .btn {
-            width: 65px; 
-            height: 65px; 
+5px; 
             border-radius: 50%; 
             border: none;
             font-size: 26px; 
