@@ -13,7 +13,7 @@
         }
         * { box-sizing: border-box; font-family: -apple-system, system-ui, sans-serif; margin: 0; padding: 0; }
         body { background: var(--bg); display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-        .app-shell { width: 100%; max-width: 400px; height: 100vh; background: white; position: relative; display: flex; flex-direction: column; }
+        .app-shell { width: 100%; max-width: 400px; height: 200vh; background: white; position: relative; display: flex; flex-direction: column; }
         @media (min-width: 500px) { .app-shell { height: 90vh; border-radius: 30px; border: 8px solid #222; } }
         .header { padding: 20px; font-size: 24px; font-weight: bold; color: var(--primary); border-bottom: 1px solid #eee; }
         .view { flex: 1; display: none; flex-direction: column; overflow: hidden; }
@@ -73,7 +73,7 @@
     </div>
 
     <div class="nav">
-        <div class="nav-item active" onclick="showView('discover', this)">🎴</div>
+        <div class="nav-item active" onclick="showView('discover', this)">&#128149;</div>
         <div class="nav-item" onclick="showView('inbox', this)">💬</div>
     </div>
 </div>
