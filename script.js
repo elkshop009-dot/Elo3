@@ -1,135 +1,142 @@
-// --- ADS ---
-const adLinks = [
-    "https://www.effectivegatecpm.com/szaxcfckwf?key=16135805dc97698328fbcff487238624",
-    "https://omg10.com/4/10716564"
-];
-let clickCount = 0;
-
-function handleAdClick() {
-    clickCount++;
-    if (clickCount > 1) {
-        const randomAd = adLinks[Math.floor(Math.random() * adLinks.length)];
-        window.open(randomAd, '_blank');
-    }
-}
-
-// --- IMAGES ---
-const profileImageUrls = [];
-for (let i = 1; i <= 20; i++) {
-    profileImageUrls.push(`img/foto${i}.jpg`);
-}
-
-const femaleNames = ["Maria", "Ana", "Alice", "Helena", "Valentina", "Fernanda", "Juliana", "Sophia", "Amanda", "Letícia", "Luzia", "Antonia", "Francisca", "Terezinha"];
-
-let matches = [];
-let chatHistories = {};
-let currentPartner = null;
-
-// --- FUNCTIONS ---
-function createCard() {
-    const url = profileImageUrls[Math.floor(Math.random() * profileImageUrls.length)];
-    const name = femaleNames[Math.floor(Math.random() * femaleNames.length)];
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.innerHTML = `
-        <img src="${url}" onerror="this.src='https://via.placeholder.com/400x600?text=Imagem+Nao+Encontrada'">
-        <div class="card-info">
-            <h2>${name}, 22 <span class="online-dot pulse"></span></h2>
-            <p>Online agora • Perto de você</p>
-        </div>`;
-    card.data = { name, img: url };
-    return card;
-}
-
-function swipe(isLike) {
-    const cards = document.querySelectorAll('.card');
-    const topCard = cards[cards.length - 1];
-    if (!topCard) return;
-
-    topCard.style.transform = isLike ? "translateX(200%) rotate(30deg)" : "translateX(-200%) rotate(-30deg)";
-    
-    if (isLike && Math.random() > 0.3) {
-        currentPartner = topCard.data;
-        document.getElementById('match-name-label').innerText = currentPartner.name;
-        document.getElementById('match-popup').style.display = 'flex';
-        
-        if (!chatHistories[currentPartner.name]) {
-            matches.push(currentPartner);
-            chatHistories[currentPartner.name] = [{ sender: 'ai', text: `Oi! Sou a ${currentPartner.name}. Gostei do seu perfil!` }];
-            updateInbox();
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Elo | Mobile</title>
+    <style>
+        :root {
+            --primary: #ff4b6b;
+            --gradient: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            --bg: #ffffff;
         }
-    }
-    
-    setTimeout(() => {
-        topCard.remove();
-        document.getElementById('card-stack').prepend(createCard());
-    }, 400);
-}
 
-function updateInbox() {
-    const list = document.getElementById('inbox-list');
-    list.innerHTML = matches.map(m => `
-        <div class="inbox-item" onclick="handleAdClick(); openChat('${m.name}', '${m.img}')">
-            <img src="${m.img}" class="avatar">
-            <div>
-                <b style="font-size:16px;">${m.name}</b>
-                <p style="font-size:13px; color:#888;">${chatHistories[m.name].slice(-1)[0].text}</p>
-            </div>
-        </div>`).join('');
-}
+        /* Prevent scrolling & Zooming */
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background: #000;
+            position: fixed;
+        }
 
-function openChat(name, img) {
-    currentPartner = { name, img };
-    document.getElementById('chat-name-header').innerText = name;
-    document.getElementById('chat-img').src = img;
-    renderChat();
-    showView('chat');
-}
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            font-family: -apple-system, system-ui, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .app-shell { 
+            width: 100%; 
+            height: 100dvh; 
+            background: var(--bg); 
+            display: flex; 
+            flex-direction: column;
+            /* FIX: Pushes content away from Notch and Home Bar */
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
 
-function renderChat() {
-    const log = document.getElementById('chat-log');
-    log.innerHTML = chatHistories[currentPartner.name].map(m => `
-        <div class="bubble ${m.sender}">${m.text}</div>`).join('');
-    log.scrollTop = log.scrollHeight;
-}
+        .header { 
+            padding: 15px 20px; 
+            font-size: 24px; 
+            font-weight: 900; 
+            color: var(--primary); 
+            border-bottom: 1px solid #eee;
+            flex-shrink: 0;
+        }
 
-function sendMsg() {
-    const input = document.getElementById('chat-input');
-    const text = input.value.trim();
-    if (!text) return;
-    
-    chatHistories[currentPartner.name].push({ sender: 'user', text });
-    renderChat();
-    input.value = '';
-    
-    setTimeout(() => {
-        chatHistories[currentPartner.name].push({ sender: 'ai', text: "Que legal! Me conta mais sobre você? 😊" });
-        renderChat();
-        updateInbox();
-    }, 1000);
-}
+        .view { flex: 1; display: none; flex-direction: column; overflow: hidden; }
+        .view.active { display: flex; }
 
-function showView(id, navEl) {
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    document.getElementById('view-' + id).classList.add('active');
-    if (navEl) {
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        navEl.classList.add('active');
-    }
-}
+        .stack-area { flex: 1; position: relative; margin: 10px; }
+        #card-stack { width: 100%; height: 100%; position: relative; }
+        
+        .card { 
+            position: absolute; inset: 0; border-radius: 20px; 
+            overflow: hidden; background: #f0f0f0; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+        }
+        
+        /* FIX: Ensures image fills the card and handles errors */
+        .card img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            display: block;
+        }
+        
+        .card-info { 
+            position: absolute; bottom: 0; width: 100%; 
+            padding: 40px 15px 15px; 
+            background: linear-gradient(transparent, rgba(0,0,0,0.8)); 
+            color: white; 
+        }
 
-function closeMatch() { document.getElementById('match-popup').style.display = 'none'; }
-function openChatFromMatch() { closeMatch(); openChat(currentPartner.name, currentPartner.img); }
+        .controls {
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-shrink: 0;
+        }
 
-// --- INIT ---
-window.onload = () => {
-    const stack = document.getElementById('card-stack');
-    for(let i=0; i<3; i++) {
-        stack.prepend(createCard());
-    }
-    
-    document.getElementById('send-btn').onclick = () => { handleAdClick(); sendMsg(); };
-    document.getElementById('chat-input').onkeypress = (e) => {
-        if (e.key === 'Enter') { handleAdClick(); sendMsg(); }
-    };
-};
+        .btn {
+            width: 60px; height: 60px; border-radius: 50%; border: none;
+            font-size: 24px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        /* FIX: Navigation is now strictly above the home bar */
+        .nav { 
+            height: 65px; 
+            border-top: 1px solid #eee; 
+            display: flex; 
+            justify-content: space-around; 
+            align-items: center; 
+            background: #fff;
+            flex-shrink: 0;
+        }
+        .nav-item { font-size: 28px; cursor: pointer; color: #ccc; }
+        .nav-item.active { color: var(--primary); }
+
+        #match-popup { 
+            position: absolute; inset: 0; background: rgba(0,0,0,0.95); 
+            z-index: 9999; display: none; flex-direction: column; 
+            justify-content: center; align-items: center; color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-shell">
+    <div id="match-popup">
+        <h1 style="color:var(--primary); font-size: 32px;">DEU MATCH!</h1>
+        <button onclick="closeMatch()" style="margin-top:20px; padding:15px 30px; border-radius:30px; border:none; background:var(--gradient); color:#fff;">Continuar</button>
+    </div>
+
+    <div id="view-discover" class="view active">
+        <div class="header">Elo &#128293;</div>
+        <div class="stack-area"><div id="card-stack"></div></div>
+        <div class="controls">
+            <button onclick="swipe(false)" class="btn" style="background:#fff; color:red;">✕</button>
+            <button onclick="swipe(true)" class="btn" style="background:var(--gradient); color:#fff;">❤</button>
+        </div>
+    </div>
+
+    <div id="view-inbox" class="view">
+        <div class="header" style="color:#000">Mensagens</div>
+        <div id="inbox-list" style="overflow-y:auto; flex:1;"></div>
+    </div>
+
+    <div class="nav">
+        <div class="nav-item active" onclick="showView('discover', this)">&#128149;</div>
+        <div class="nav-item" onclick="showView('inbox', this)">💬</div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
