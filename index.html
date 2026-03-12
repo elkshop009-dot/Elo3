@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Elo | Mobile</title>
+    <title>Elo | Premium</title>
     <style>
         :root {
             --primary: #ff4b6b;
             --gradient: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
             --bg: #ffffff;
+            --online: #4cd137;
         }
 
-        /* Prevent scrolling & Zooming */
+        /* Prevent Zoom & Overflow */
         html, body {
             height: 100%;
             width: 100%;
@@ -34,62 +35,68 @@
             background: var(--bg); 
             display: flex; 
             flex-direction: column;
-            /* FIX: Pushes content away from Notch and Home Bar */
             padding-top: env(safe-area-inset-top);
             padding-bottom: env(safe-area-inset-bottom);
         }
 
+        /* NEW HEADER: Logo Left, Inbox Right */
         .header { 
             padding: 15px 20px; 
-            font-size: 24px; 
-            font-weight: 900; 
-            color: var(--primary); 
-            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f2f2f2;
+            background: #fff;
             flex-shrink: 0;
         }
 
+        .logo {
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--primary);
+            letter-spacing: -1.5px;
+        }
+
+        /* Inbox Icon Animation */
+        .inbox-trigger {
+            position: relative;
+            font-size: 22px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .inbox-trigger:active { transform: scale(0.9); }
+
+        .notification-dot {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 10px;
+            height: 10px;
+            background: #ff0000;
+            border-radius: 50%;
+            border: 2px solid white;
+            animation: pulse-ring 1.5s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.7); box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }
+            100% { transform: scale(0.7); box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+        }
+
+        /* Views */
         .view { flex: 1; display: none; flex-direction: column; overflow: hidden; }
         .view.active { display: flex; }
 
+        /* Card Stack */
         .stack-area { flex: 1; position: relative; margin: 10px; }
         #card-stack { width: 100%; height: 100%; position: relative; }
-        
-        .card { 
-            position: absolute; inset: 0; border-radius: 20px; 
-            overflow: hidden; background: #f0f0f0; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-        }
-        
-        /* FIX: Ensures image fills the card and handles errors */
-        .card img { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover; 
-            display: block;
-        }
-        
-        .card-info { 
-            position: absolute; bottom: 0; width: 100%; 
-            padding: 40px 15px 15px; 
-            background: linear-gradient(transparent, rgba(0,0,0,0.8)); 
-            color: white; 
-        }
+        .card { position: absolute; inset: 0; border-radius: 22px; overflow: hidden; background: #eee; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .card img { width: 100%; height: 100%; object-fit: cover; }
+        .card-info { position: absolute; bottom: 0; width: 100%; padding: 45px 15px 15px; background: linear-gradient(transparent, rgba(0,0,0,0.85)); color: white; }
 
-        .controls {
-            padding: 15px;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            flex-shrink: 0;
-        }
-
-        .btn {
-            width: 60px; height: 60px; border-radius: 50%; border: none;
-            font-size: 24px; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
-        /* FIX: Navigation is now strictly above the home bar */
+        /* Navigation Fix */
         .nav { 
             height: 65px; 
             border-top: 1px solid #eee; 
@@ -99,143 +106,69 @@
             background: #fff;
             flex-shrink: 0;
         }
-        .nav-item { font-size: 28px; cursor: pointer; color: #ccc; }
+        .nav-item { font-size: 28px; cursor: pointer; color: #ddd; }
         .nav-item.active { color: var(--primary); }
 
-        #match-popup { 
-            position: absolute; inset: 0; background: rgba(0,0,0,0.95); 
-            z-index: 9999; display: none; flex-direction: column; 
-            justify-content: center; align-items: center; color: white;
-        }
+        /* Popups */
+        #match-popup { position: absolute; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; display: none; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; }
     </style>
 </head>
 <body>
 
 <div class="app-shell">
+    <div class="header">
+        <div class="logo">Elo &#128293;</div>
+        <div class="inbox-trigger" onclick="showView('inbox')">
+            💬
+            <div class="notification-dot"></div>
+        </div>
+    </div>
+
     <div id="match-popup">
-        <h1 style="color:var(--primary); font-size: 32px;">DEU MATCH!</h1>
-        <button onclick="closeMatch()" style="margin-top:20px; padding:15px 30px; border-radius:30px; border:none; background:var(--gradient); color:#fff;">Continuar</button>
+        <h1 style="color:var(--primary); font-size: 36px; font-weight: 900;">MATCH!</h1>
+        <p>Você e <span id="match-name-label"></span> combinam.</p>
+        <button onclick="handleAdClick(); openChatFromMatch();" style="width:80%; padding:18px; border-radius:35px; border:none; background:var(--gradient); color:white; font-weight:bold; margin-top:30px;">Enviar Mensagem</button>
+        <p onclick="closeMatch()" style="margin-top:20px; opacity:0.5;">Agora não</p>
     </div>
 
     <div id="view-discover" class="view active">
-        <div class="header">Elo &#128293;</div>
-        <div class="stack-area"><div id="card-stack"></div></div>
-        <div class="controls">
-            <button onclick="swipe(false)" class="btn" style="background:#fff; color:red;">✕</button>
-            <button onclick="swipe(true)" class="btn" style="background:var(--gradient); color:#fff;">❤</button>
+        <div class="stack-area">
+            <div id="card-stack"></div>
+        </div>
+        <div style="padding:15px; display:flex; justify-content:center; gap:20px;">
+            <button onclick="handleAdClick(); swipe(false)" style="width:65px; height:65px; border-radius:50%; border:1px solid #eee; background:#fff; color:red; font-size:26px;">✕</button>
+            <button onclick="handleAdClick(); swipe(true)" style="width:65px; height:65px; border-radius:50%; border:none; background:var(--gradient); color:#fff; font-size:26px;">❤</button>
         </div>
     </div>
 
     <div id="view-inbox" class="view">
-        <div class="header" style="color:#000">Mensagens</div>
+        <div style="padding:15px; border-bottom:1px solid #eee; font-weight:bold; font-size:18px;">Suas Conversas</div>
         <div id="inbox-list" style="overflow-y:auto; flex:1;"></div>
     </div>
 
+    <div id="view-chat" class="view">
+        <div style="padding:10px; border-bottom:1px solid #eee; display:flex; align-items:center; gap:10px;">
+            <button onclick="showView('inbox')" style="border:none; background:none; font-size:30px; color:#888;">‹</button>
+            <img id="chat-img" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
+            <b id="chat-name-header"></b>
+        </div>
+        <div id="chat-log" style="flex:1; padding:15px; overflow-y:auto; background:#f9f9f9; display:flex; flex-direction:column; gap:10px;"></div>
+        <div style="padding:10px; display:flex; gap:10px; border-top:1px solid #eee;">
+            <input type="text" id="chat-input" style="flex:1; padding:12px; border-radius:20px; border:1px solid #eee;" placeholder="Mande um oi...">
+            <button id="send-btn" style="background:var(--primary); color:white; border:none; width:45px; height:45px; border-radius:50%;">➔</button>
+        </div>
+    </div>
+
     <div class="nav">
-        <div class="nav-item active" onclick="showView('discover', this)">&#128149;</div>
-        <div class="nav-item" onclick="showView('inbox', this)">💬</div>
+        <div class="nav-item active" id="nav-home" onclick="showView('discover', this)">🏠</div>
+        <div class="nav-item" id="nav-msg" onclick="showView('inbox', this)">📬</div>
     </div>
 </div>
 
 <script src="script.js"></script>
 </body>
 </html>
-            flex-direction: column; 
-            box-shadow: 0 0 40px rgba(0,0,0,0.5);
-        }
-
-        @media (min-width: 500px) { 
-            .app-shell { height: 92vh; border-radius: 40px; border: 12px solid #222; } 
-        }
-
-        /* Header UI */
-        .header { 
-            padding: 20px 25px 10px; 
-            font-size: 28px; 
-            font-weight: 800; 
-            color: var(--primary); 
-            letter-spacing: -1px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        /* Dynamic Views */
-        .view { flex: 1; display: none; flex-direction: column; overflow: hidden; animation: fadeIn 0.3s ease; }
-        .view.active { display: flex; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Card Stack Refinement */
-        .stack { flex: 1; position: relative; margin: 10px 15px; perspective: 1000px; }
-        .card { 
-            position: absolute; width: 100%; height: 100%; 
-            border-radius: 28px; overflow: hidden; background: #f3f3f3; 
-            box-shadow: var(--card-shadow); 
-            transition: transform 0.45s cubic-bezier(0.23, 1, 0.32, 1);
-            will-change: transform;
-        }
-        .card img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
-        .card-info { 
-            position: absolute; bottom: 0; width: 100%; 
-            padding: 80px 20px 25px; 
-            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, transparent 100%); 
-            color: white; 
-        }
-        .card-info h2 { font-size: 24px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-
-        /* Buttons & Interaction */
-        .action-btns { padding: 20px; display: flex; justify-content: center; gap: 20px; background: white; }
-        .btn-circle {
-            width: 65px; height: 65px; border-radius: 50%; border: none; 
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: transform 0.1s; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        .btn-circle:active { transform: scale(0.9); }
-        .btn-dislike { background: #fff; color: #ff4444; font-size: 28px; border: 1px solid #eee; }
-        .btn-like { background: var(--gradient); color: white; font-size: 28px; }
-
-        /* Inbox List */
-        .inbox-item { display: flex; align-items: center; padding: 16px 20px; gap: 15px; border-bottom: 1px solid #f8f8f8; cursor: pointer; transition: background 0.2s; }
-        .inbox-item:active { background: #f5f5f5; }
-        .avatar { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; background: #eee; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-
-        /* Modern Chat */
-        #chat-log { flex: 1; padding: 20px; overflow-y: auto; background: #fafafa; display: flex; flex-direction: column; gap: 12px; }
-        .bubble { padding: 12px 18px; border-radius: 22px; font-size: 15px; max-width: 80%; line-height: 1.5; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        .user { align-self: flex-end; background: var(--gradient); color: white; border-bottom-right-radius: 4px; }
-        .ai { align-self: flex-start; background: white; color: #1a1a1a; border-bottom-left-radius: 4px; border: 1px solid #efefef; }
-
-        /* Footer Nav (Safe Area for modern phones) */
-        .nav { 
-            height: 80px; border-top: 1px solid #eee; 
-            display: flex; justify-content: space-around; 
-            align-items: center; background: white;
-            padding-bottom: env(safe-area-inset-bottom);
-        }
-        .nav-item { font-size: 28px; cursor: pointer; color: #d0d0d0; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .nav-item.active { color: var(--primary); transform: translateY(-3px) scale(1.1); }
-
-        /* Status & Popups */
-        .online-dot { width: 12px; height: 12px; background: var(--online); border-radius: 50%; display: inline-block; border: 2px solid white; }
-        .pulse { animation: pulse-anim 2s infinite; }
-        @keyframes pulse-anim { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.1); } 100% { opacity: 1; transform: scale(1); } }
-
-        #match-popup { 
-            position: absolute; inset: 0; background: rgba(0,0,0,0.97); 
-            z-index: 2000; display: none; flex-direction: column; 
-            justify-content: center; align-items: center; color: white; text-align: center; padding: 40px;
-            backdrop-filter: blur(10px);
-        }
-    </style>
-</head>
-<body>
-
-<div class="app-shell">
-    <div id="match-popup">
-        <div style="font-size: 80px; margin-bottom: 10px;">🔥</div>
-        <h1 style="color:var(--primary); font-size: 42px; font-weight: 900; letter-spacing: -2px;">DEU MATCH!</h1>
-        <p style="margin: 15px 0; font-size: 18px; opacity: 0.9;">Você e <span id="match-name-label" style="font-weight: 800;"></span> se curtiram mutuamente.</p>
-        <button onclick="handleAdClick(); openChatFromMatch();" style="margin-top:30px; width: 100%; padding:18px; border-radius:35px; border:none; background:var(--gradient); color:white; font-weight:800; cursor:pointer; font-size: 18px; box-shadow: 0 10px 20px rgba(255, 75, 107, 0.3);">Mandar Mensagem</button>
+px; box-shadow: 0 10px 20px rgba(255, 75, 107, 0.3);">Mandar Mensagem</button>
         <p onclick="closeMatch()" style="margin-top:25px; font-size:15px; opacity:0.5; cursor:pointer; font-weight: 600;">Continuar explorando</p>
     </div>
 
