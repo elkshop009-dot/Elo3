@@ -8,32 +8,166 @@
         :root {
             --primary: #ff4b6b;
             --gradient: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
-            --bg-body: #121212; /* Dark background for desktop */
-            --bg-app: #ffffff;
+            --bg: #ffffff;
+            --online: #4cd137;
         }
 
-        /* Prevent the "Zoom" issue and leaking text */
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
+        /* Prevent scrolling and zooming on the whole page */
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background: #000; /* Outer background */
+            position: fixed; /* Stops the "bouncing" scroll on iPhones */
+        }
+
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
         
-        body { 
-            background-color: var(--bg-body); 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            height: 100dvh; 
-            width: 100vw;
-            overflow: hidden; 
-        }
-
-        /* THE FIX: This shell forces a phone shape on desktop, but fills 100% on phones */
+        /* The App Container: Forced to fill mobile screen only */
         .app-shell { 
             width: 100%; 
-            max-width: 450px; /* Limits width on desktop */
-            height: 100dvh; 
-            background: var(--bg-app); 
+            height: 100dvh; /* Dynamic viewport height for mobile browser bars */
+            background: var(--bg); 
             display: flex; 
             flex-direction: column;
             position: relative;
+            padding-top: env(safe-area-inset-top); /* Safety for the Notch */
+            padding-bottom: env(safe-area-inset-bottom); /* Safety for Home Bar */
+        }
+
+        .header { 
+            padding: 15px 20px; 
+            font-size: 26px; 
+            font-weight: 900; 
+            color: var(--primary); 
+            border-bottom: 1px solid #f2f2f2;
+            background: #fff;
+            flex-shrink: 0;
+            letter-spacing: -1px;
+        }
+
+        .view { flex: 1; display: none; flex-direction: column; overflow: hidden; }
+        .view.active { display: flex; }
+
+        /* Card Layout optimized for portrait phones */
+        .stack-container {
+            flex: 1;
+            position: relative;
+            margin: 10px 12px;
+            display: flex;
+            align-items: center;
+        }
+        
+        #card-stack { width: 100%; height: 100%; position: relative; }
+        
+        .card { 
+            position: absolute; inset: 0; border-radius: 24px; 
+            overflow: hidden; background: #eee; 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        .card img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+        
+        .card-info { 
+            position: absolute; bottom: 0; width: 100%; 
+            padding: 60px 20px 20px; 
+            background: linear-gradient(transparent, rgba(0,0,0,0.9)); 
+            color: white; 
+        }
+
+        /* Buttons: Bottom-anchored for thumb reach */
+        .controls {
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            background: #fff;
+        }
+
+        .btn-circle {
+            width: 68px; height: 68px; border-radius: 50%; border: none;
+            font-size: 28px; cursor: pointer; display: flex;
+            align-items: center; justify-content: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.1s;
+        }
+        .btn-circle:active { transform: scale(0.9); }
+
+        /* Modern Navigation */
+        .nav { 
+            height: 75px; 
+            border-top: 1px solid #eee; 
+            display: flex; 
+            justify-content: space-around; 
+            align-items: center;
+            background: #fff;
+            flex-shrink: 0;
+        }
+        .nav-item { font-size: 30px; cursor: pointer; color: #ddd; }
+        .nav-item.active { color: var(--primary); }
+
+        /* Overlays */
+        #match-popup { 
+            position: absolute; inset: 0; background: rgba(0,0,0,0.96); 
+            z-index: 10000; display: none; flex-direction: column; 
+            justify-content: center; align-items: center; color: white; text-align: center;
+            padding: 30px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-shell">
+    <div id="match-popup">
+        <h1 style="color:var(--primary); font-size: 40px; font-weight: 900;">DEU MATCH!</h1>
+        <p style="font-size: 18px; margin: 15px 0;">Você e <span id="match-name-label" style="font-weight:bold;"></span> se escolheram.</p>
+        <button onclick="handleAdClick(); openChatFromMatch();" style="width:100%; padding:20px; border-radius:40px; border:none; background:var(--gradient); color:white; font-weight:bold; margin-top:30px; font-size: 18px;">Enviar Mensagem</button>
+        <p onclick="closeMatch()" style="margin-top:30px; opacity:0.5; font-size: 16px;">Voltar</p>
+    </div>
+
+    <div id="view-discover" class="view active">
+        <div class="header">Elo &#128293;</div>
+        <div class="stack-container">
+            <div id="card-stack"></div>
+        </div>
+        <div class="controls">
+            <button onclick="handleAdClick(); swipe(false)" class="btn-circle" style="background:#fff; color:#ff4b6b; border: 1px solid #eee;">✕</button>
+            <button onclick="handleAdClick(); swipe(true)" class="btn-circle" style="background:var(--gradient); color:#fff;">❤</button>
+        </div>
+    </div>
+
+    <div id="view-inbox" class="view">
+        <div class="header" style="color:#000">Conversas</div>
+        <div id="inbox-list" style="overflow-y: auto;"></div>
+    </div>
+
+    <div id="view-chat" class="view">
+        <div style="padding:15px; border-bottom:1px solid #eee; display:flex; align-items:center; gap:12px;">
+            <button onclick="showView('inbox')" style="border:none; background:none; font-size:35px; color:#bbb;">‹</button>
+            <img id="chat-img" style="width:45px; height:45px; border-radius:50%; object-fit:cover;">
+            <b id="chat-name-header" style="font-size: 20px;"></b>
+        </div>
+        <div id="chat-log" style="flex:1; padding:20px; overflow-y:auto; background:#f9f9f9; display:flex; flex-direction:column; gap:12px;"></div>
+        <div style="padding:15px; display:flex; gap:10px; border-top: 1px solid #eee;">
+            <input type="text" id="chat-input" style="flex:1; padding:15px; border-radius:30px; border:1px solid #eee; outline:none; font-size: 16px;" placeholder="Diga algo...">
+            <button id="send-btn" style="background:var(--primary); color:white; border:none; width: 50px; height: 50px; border-radius:50%; font-weight:bold; font-size: 22px;">➔</button>
+        </div>
+    </div>
+
+    <div class="nav">
+        <div class="nav-item active" onclick="showView('discover', this)">&#128149;</div>
+        <div class="nav-item" onclick="showView('inbox', this)">💬</div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
             box-shadow: 0 0 50px rgba(0,0,0,0.5);
         }
 
